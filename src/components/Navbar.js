@@ -1,4 +1,4 @@
-import { Button, Divider, IconButton, Typography, useTheme } from '@mui/material'
+import { Button, ButtonBase, Divider, IconButton, Typography, useMediaQuery, useTheme } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu';
 import React from 'react'
 
@@ -7,31 +7,46 @@ function Navbar() {
     const handleHamburgerClick = (event) => {
         console.log('hamburger clicked')
     }
-    console.log(theme);
+
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+    
     return (
-        <nav className="h-16 py-2">
+        <nav className="min-h-16 py-1">
             <div className="px-5 grid grid-cols-3">
-                <div className="my-auto text-left">
+                <div className="flex flex-row my-auto text-left w-full">
                     <IconButton onClick={handleHamburgerClick} >
                         <MenuIcon sx={{
                             width: '24px',
                             height: '24px',
                         }}/>
                     </IconButton>
+                    {
+                        isSmallScreen ?
+                        <Typography variant="h6" className="font-extrabold my-auto align-middle w-full"  align="left" >
+                            Wordle Clone
+                        </Typography>
+                        :
+                        <></>
+                    }
                 </div>
                 <div className="my-auto">
-                    <Typography variant="h4" align="center" >
-                        Wordle Clone
-                    </Typography>
+                    {!isSmallScreen ?
+                        <Typography variant="h4" className="font-extrabold" align="center" >
+                            Wordle Clone
+                        </Typography>
+                        :
+                        <></>
+                    }
                 </div>
                 <div className="my-auto text-right">
-                    <Button variant="outlined" size="small" sx={{
+                    <ButtonBase variant="outlined" size="small" className="text-xs py-1.5 px-6 font-medium" sx={{
                         borderRadius: '20px',
-                        borderColor: theme.palette.miss.main,
+                        border: `1px solid ${theme.palette.miss.main}}`,
                         color: theme.palette.text.primary,
-                    }} color="inherit">
+                        textTransform: 'none',
+                    }} color="inherit" onClick={() => window.open('https://www.nytimes.com/games/wordle/index.html', '_blank')}>
                         Play Real Wordle
-                    </Button>
+                    </ButtonBase>
                 </div>
             </div>
             <Divider className="w-full mb-2" />

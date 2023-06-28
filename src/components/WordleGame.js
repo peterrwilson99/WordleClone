@@ -1,90 +1,161 @@
-import { ButtonBase, Container } from '@mui/material'
-import React from 'react'
+import { Container } from '@mui/material'
+import React, { useEffect, useState } from 'react'
 import Tile from './Tile'
-import BackspaceIcon from '@mui/icons-material/Backspace';
+import { KeyboardButton } from './KeyboardButton';
 
+const correctWord = "RACED"
 
-const TileRow = () => {
-    return (
-        <div className="w-full flex flex-row justify-center gap-2 my-2">
-            <Tile letter="S" isCorrect={true}/>
-            <Tile letter="A" />
-            <Tile letter="G" isContained={true}/>
-            <Tile />
-            <Tile />
-        </div>
-    )
-}
+const attempts = 6;
 
+const keyboardLetters = ['Q','W','E','R','T','Y','U','I','O','P','A','S','D','F','G','H','J','K','L','Z','X','C','V','B','N','M']
+
+const letterRows = [
+    ['Q','W','E','R','T','Y','U','I','O','P'],
+    ['A','S','D','F','G','H','J','K','L'],
+    ['ENTER', 'Z','X','C','V','B','N','M', 'BACKSPACE'],
+]
 
 function WordleGame() {
-    const rows = [
-        TileRow(),
-        TileRow(),
-        TileRow(),
-        TileRow(),
-        TileRow(),
-    ]
+    const [correctLetters, setCorrectLetters] = useState([]);
+    const [containedLetters, setContainedLetters] = useState([]);
+    const [incorrectLetters, setIncorrectLetters] = useState([]);
+    const [currentRow, setCurrentRow] = useState(0);
+    const [submittedRows, setSubmittedRows] = useState(Array.from({ length: attempts }, () => false));
+    const [rowInputs, setRowInputs] = useState(Array.from({ length: attempts }, () => ''));
+    const [rowFeedbacks, setRowFeedbacks] = useState(Array.from({ length: attempts }, () => [{}, {}, {}, {}, {}]));
 
-    const KeyboardButton = ({letter, isCorrect, isContained, attempted}) => {
-        const color = isCorrect ? '#6aaa64' : isContained ? '#c9b458' : attempted ? '#818384' : '#d3d6da';
-        const textColor = isCorrect ? '#ffffff' : isContained ? '#ffffff' : attempted ? '#ffffff' : '#000000';
-        return (
-            <ButtonBase sx={{
-                height: '58px',
-                width: letter.length > 1 ? '65px' : '43px',
-                fontSize: letter.length > 1 ? '0.75em' : '1.25em',
-                border: '0',
-                padding: '0',
-                marginRight: '6px',
-                borderRadius: '4px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: `${color}!important`,
-                color: textColor,
-                textTransform: 'uppercase',
-            }} >
-                {letter === 'Back' ? <BackspaceIcon /> : letter}
-            </ButtonBase>
-        )
+    const handleKeyPress = (letter) => {
+        if (keyboardLetters.includes(letter.toUpperCase())) {
+            setRowInputs((prevRowInputs) => {
+                return prevRowInputs.map((rowInput, index) => {
+                    if (index === currentRow && rowInput.length < 5) {
+                        return rowInput + letter;
+                    } else {
+                        return rowInput;
+                    }
+                });
+            });
+        }else if(letter === 'BACKSPACE'){
+            setRowInputs((prevRowInputs) => {
+                return prevRowInputs.map((rowInput, index) => {
+                    if (index === currentRow && rowInput.length > 0) {
+                        return rowInput.slice(0, -1);
+                    } else {
+                        return rowInput;
+                    }
+                });
+            });
+        }else if(letter === 'ENTER' && rowInputs[currentRow].length === 5){
+            setSubmittedRows((prevSubmittedRows) => {
+                return prevSubmittedRows.map((submittedRow, index) => {
+                    if (index === currentRow) {
+                        return true;
+                    } else {
+                        return submittedRow;
+                    }
+                });
+            });
+            setCurrentRow((prevCurrentRow) => prevCurrentRow + 1);
+        }
     }
 
-    const Keyboard = () => {
-        const lettersRow1 = ['Q','W','E','R','T','Y','U','I','O','P']
-        const lettersRow2 = ['A','S','D','F','G','H','J','K','L']
-        const lettersRow3 = ['Enter', 'Z','X','C','V','B','N','M', 'Back']
+    useEffect(() => {
+        const handleKeyPressEvent = (e) => handleKeyPress(e.key.toUpperCase());
+        window.addEventListener('keydown', handleKeyPressEvent);
+        return () => {
+            window.removeEventListener('keydown', handleKeyPressEvent);
+        };
+    }, [handleKeyPress]);
 
+    useEffect(() => {
+        if (currentRow === attempts) {
+            console.log("Game Over");
+        }
+        // provide feedback on previous attempt
+        const lastInputString = rowInputs[currentRow - 1];
+        setRowFeedbacks((prevRowFeedbacks) => {
+            return prevRowFeedbacks.map((rowFeedback, index) => {
+                if (index === currentRow - 1) {
+                    return provideFeedback(lastInputString);
+                } else {
+                    return rowFeedback;
+                }
+            });
+        });
+    }, [currentRow]);
+
+    const TileRow = ({ letters, truthValues, isSubmitted }) => {
+        letters = letters === '' ? null : letters.toUpperCase();
+        const letterArray = letters ? letters.split('') : [];
         return (
-            <div >
-                <div className="w-full flex flex-row justify-center my-2">
-                    {lettersRow1.map((letter) => {
-                        return (
-                            <KeyboardButton letter={letter} />
-                        )
-                    })}
-                </div>
-                <div className="w-full flex flex-row justify-center my-2">
-                    {lettersRow2.map((letter) => {
-                        return (
-                            <KeyboardButton letter={letter} />
-                        )
-                    })}
-                </div>
-                <div className="w-full flex flex-row justify-center my-2">
-                    {lettersRow3.map((letter) => {
-                        return (
-                            <KeyboardButton letter={letter} />
-                        )
-                    })}
-                </div>
-
+            <div className="w-full flex flex-row justify-center gap-2 my-2">
+                {truthValues.map((truthValue, index) => (
+                    <Tile 
+                        letter={letterArray[index] ? letterArray[index].toUpperCase() : null} 
+                        isCorrect={truthValue.isCorrect ?? truthValue.isCorrect} 
+                        isContained={truthValue.isContained ?? truthValue.isContained}
+                        isSubmitted={isSubmitted}
+                    />
+                ))}
             </div>
         )
     }
 
+    const rows = rowInputs.map((rowInput, index) => (
+        <TileRow letters={rowInput} truthValues={rowFeedbacks[index]} isSubmitted={submittedRows[index]} />
+    ))
+
+    const Keyboard = () => {
+        return (
+            <div >
+                {letterRows.map((letterRow) => {
+                    return(
+                        <div className="w-full flex flex-row justify-center my-2">
+                            {letterRow.map((letter) => {
+                                return (
+                                    <KeyboardButton handleKeyPress={handleKeyPress} letter={letter} isCorrect={correctLetters.includes(letter)} isContained={containedLetters.includes(letter)} attempted={incorrectLetters.includes(letter)}/>
+                                )
+                            })}
+                        </div>
+                    )
+                })}
+            </div>
+        )
+    }
+
+    const provideFeedback = (inputString) => {
+        const letters = inputString.toUpperCase().split('');
+        const correctWordLetters = correctWord.toUpperCase().split('');
+        const correctLettersCurrent = [];
+        const containedLettersCurrent = [];
+        const incorrectLettersCurrent = [];
+        const truthValues = letters.map((letter, index) => {
+            const isCorrect = letter === correctWordLetters[index];
+            const isContained = correctWord.includes(letter);
+            if (isCorrect) {
+                correctLettersCurrent.push(letter);
+            } else if (isContained) {
+                containedLettersCurrent.push(letter);
+            } else {
+                incorrectLettersCurrent.push(letter);
+            }
+            return { isCorrect, isContained };
+        });
+
+        setCorrectLetters((prevCorrectLetters) => {
+            return [...prevCorrectLetters, ...correctLettersCurrent];
+        });
+        setContainedLetters((prevContainedLetters) => {
+            return [...prevContainedLetters, ...containedLettersCurrent];
+        });
+        setIncorrectLetters((prevIncorrectLetters) => {
+            return [...prevIncorrectLetters, ...incorrectLettersCurrent];
+        });
+        return truthValues;
+    }
+
     return (
-        <Container className="text-center m-auto my-4">
+        <Container className="text-center m-auto">
             {rows}
             <div className="mt-8">{Keyboard()}</div>
         </Container>
