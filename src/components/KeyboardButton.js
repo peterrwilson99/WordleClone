@@ -1,9 +1,12 @@
-import { ButtonBase, Typography } from "@mui/material";
+import { ButtonBase, Typography, useTheme } from "@mui/material";
 import BackspaceOutlinedIcon from '@mui/icons-material/BackspaceOutlined';
 
 export const KeyboardButton = ({letter, isCorrect, isContained, attempted, handleKeyPress}) => {
-    const color = isCorrect ? '#6aaa64' : isContained ? '#c9b458' : attempted ? '#818384' : '#d3d6da';
-    const textColor = isCorrect ? '#ffffff' : isContained ? '#ffffff' : attempted ? '#ffffff' : '#000000';
+    const theme = useTheme();
+    const color = isCorrect ? theme.palette.primary.main : isContained ? theme.palette.secondary.main : attempted ? theme.palette.miss.main : theme.palette.borderDefault.main;
+    const contrastText = '#FFFFFF';
+    const defaultText = theme.palette.text.primary;
+    const textColor = isCorrect ? contrastText : isContained ? contrastText : attempted ? contrastText : defaultText;
 
     return (
         <ButtonBase onClick={() => handleKeyPress(letter)} value={letter} sx={{

@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes flip {
+    0% {
+        transform: rotateX(0deg);
+        border: 2px solid #d3d6da;
+        background-color: transparent;
+    }
+    50% {
+        transform: rotateX(90deg);
+        border: 2px solid #d3d6da;
+        background-color: transparent;
+    }
+    51% {
+        transform: rotateX(90deg);
+        border: 0px solid #d3d6da;
+        color: white;
+    }
+    100% {
+        transform: rotateX(0deg);
+        color: white;
+    }
+}
+
+.flip {
+    animation: flip 0.75s ease-in-out forwards;
+}
+
+  

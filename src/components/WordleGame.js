@@ -23,6 +23,7 @@ function WordleGame() {
     const [submittedRows, setSubmittedRows] = useState(Array.from({ length: attempts }, () => false));
     const [rowInputs, setRowInputs] = useState(Array.from({ length: attempts }, () => ''));
     const [rowFeedbacks, setRowFeedbacks] = useState(Array.from({ length: attempts }, () => [{}, {}, {}, {}, {}]));
+    const [revealAnimation, setRevealAnimation] = useState(false);
 
     const handleKeyPress = (letter) => {
         if (keyboardLetters.includes(letter.toUpperCase())) {
@@ -35,6 +36,7 @@ function WordleGame() {
                     }
                 });
             });
+            setRevealAnimation(false);
         }else if(letter === 'BACKSPACE'){
             setRowInputs((prevRowInputs) => {
                 return prevRowInputs.map((rowInput, index) => {
@@ -45,6 +47,7 @@ function WordleGame() {
                     }
                 });
             });
+            setRevealAnimation(false);
         }else if(letter === 'ENTER' && rowInputs[currentRow].length === 5){
             setSubmittedRows((prevSubmittedRows) => {
                 return prevSubmittedRows.map((submittedRow, index) => {
@@ -56,6 +59,7 @@ function WordleGame() {
                 });
             });
             setCurrentRow((prevCurrentRow) => prevCurrentRow + 1);
+            setRevealAnimation(true);
         }
     }
 
@@ -84,7 +88,7 @@ function WordleGame() {
         });
     }, [currentRow]);
 
-    const TileRow = ({ letters, truthValues, isSubmitted }) => {
+    const TileRow = ({ letters, truthValues, isSubmitted, revealRow }) => {
         letters = letters === '' ? null : letters.toUpperCase();
         const letterArray = letters ? letters.split('') : [];
         return (
@@ -95,6 +99,7 @@ function WordleGame() {
                         isCorrect={truthValue.isCorrect ?? truthValue.isCorrect} 
                         isContained={truthValue.isContained ?? truthValue.isContained}
                         isSubmitted={isSubmitted}
+                        revealRow={revealRow}
                     />
                 ))}
             </div>
@@ -102,7 +107,7 @@ function WordleGame() {
     }
 
     const rows = rowInputs.map((rowInput, index) => (
-        <TileRow letters={rowInput} truthValues={rowFeedbacks[index]} isSubmitted={submittedRows[index]} />
+        <TileRow letters={rowInput} truthValues={rowFeedbacks[index]} isSubmitted={submittedRows[index]} revealRow={currentRow - 1 === index && revealAnimation} />
     ))
 
     const Keyboard = () => {

@@ -16,7 +16,10 @@ export const lightTheme = createTheme({
     },
     miss: {
       main: '#787c7e'
-    }
+    },
+    borderDefault: {
+      main: '#d3d6da'
+    },
   },
 });
 
@@ -24,17 +27,20 @@ export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#6aaa64',
+      main: '#538d4e',
     },
     secondary: {
-      main: '#c9b458',
+      main: '#b59f3b',
     },
     error: {
       main: red.A400,
     },
     miss: {
-      main: '#787c7e'
-    }
+      main: '#3a3a3c'
+    },
+    borderDefault: {
+      main: '#818384'
+    },
   },
 });
 
