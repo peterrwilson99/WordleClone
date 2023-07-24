@@ -1,9 +1,12 @@
 import { Container } from '@mui/material'
 import React, { useEffect, useState } from 'react'
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Tile from './Tile'
 import { KeyboardButton } from './KeyboardButton';
+import allWords from '../words/allWords.json'
+import possibleGameWords from '../words/possibleGameWords.json'
 
-const correctWord = "RACED"
+const correctWord = possibleGameWords[Math.floor(Math.random() * possibleGameWords.length)].toUpperCase();
 
 const attempts = 6;
 
@@ -24,6 +27,10 @@ function WordleGame() {
     const [rowInputs, setRowInputs] = useState(Array.from({ length: attempts }, () => ''));
     const [rowFeedbacks, setRowFeedbacks] = useState(Array.from({ length: attempts }, () => [{}, {}, {}, {}, {}]));
     const [revealAnimation, setRevealAnimation] = useState(false);
+    const [gameOver, setGameOver] = useState(false); // needs to be set throughout the file
+    const [gameWon, setGameWon] = useState(false); // needs to be set throughout the file
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
 
     const handleKeyPress = (letter) => {
         if (keyboardLetters.includes(letter.toUpperCase())) {
@@ -49,6 +56,12 @@ function WordleGame() {
             });
             setRevealAnimation(false);
         }else if(letter === 'ENTER' && rowInputs[currentRow].length === 5){
+            // check if word exists in allWords
+            const inputString = rowInputs[currentRow].toLowerCase();
+            if (!allWords.includes(inputString)) {
+                console.log("Word does not exist in word list");
+                return;
+            }
             setSubmittedRows((prevSubmittedRows) => {
                 return prevSubmittedRows.map((submittedRow, index) => {
                     if (index === currentRow) {
@@ -64,6 +77,9 @@ function WordleGame() {
     }
 
     useEffect(() => {
+        if(gameOver){
+            return;
+        }
         const handleKeyPressEvent = (e) => handleKeyPress(e.key.toUpperCase());
         window.addEventListener('keydown', handleKeyPressEvent);
         return () => {
@@ -73,7 +89,8 @@ function WordleGame() {
 
     useEffect(() => {
         if (currentRow === attempts) {
-            console.log("Game Over");
+            setGameOver(true);
+            setIsModalOpen(true);
         }
         // provide feedback on previous attempt
         const lastInputString = rowInputs[currentRow - 1];
@@ -95,6 +112,7 @@ function WordleGame() {
             <div className="w-full flex flex-row justify-center gap-2 my-2">
                 {truthValues.map((truthValue, index) => (
                     <Tile 
+                        key={index}
                         letter={letterArray[index] ? letterArray[index].toUpperCase() : null} 
                         isCorrect={truthValue.isCorrect ?? truthValue.isCorrect} 
                         isContained={truthValue.isContained ?? truthValue.isContained}
@@ -107,18 +125,18 @@ function WordleGame() {
     }
 
     const rows = rowInputs.map((rowInput, index) => (
-        <TileRow letters={rowInput} truthValues={rowFeedbacks[index]} isSubmitted={submittedRows[index]} revealRow={currentRow - 1 === index && revealAnimation} />
+        <TileRow key={index} letters={rowInput} truthValues={rowFeedbacks[index]} isSubmitted={submittedRows[index]} revealRow={currentRow - 1 === index && revealAnimation} />
     ))
 
     const Keyboard = () => {
         return (
             <div >
-                {letterRows.map((letterRow) => {
+                {letterRows.map((letterRow, index ) => {
                     return(
-                        <div className="w-full flex flex-row justify-center my-2">
-                            {letterRow.map((letter) => {
+                        <div key={index} className="w-full flex flex-row justify-center my-2">
+                            {letterRow.map((letter, index) => {
                                 return (
-                                    <KeyboardButton handleKeyPress={handleKeyPress} letter={letter} isCorrect={correctLetters.includes(letter)} isContained={containedLetters.includes(letter)} attempted={incorrectLetters.includes(letter)}/>
+                                    <KeyboardButton key={index} disabled={gameOver} handleKeyPress={handleKeyPress} letter={letter} isCorrect={correctLetters.includes(letter)} isContained={containedLetters.includes(letter)} attempted={incorrectLetters.includes(letter)}/>
                                 )
                             })}
                         </div>
@@ -156,11 +174,39 @@ function WordleGame() {
         setIncorrectLetters((prevIncorrectLetters) => {
             return [...prevIncorrectLetters, ...incorrectLettersCurrent];
         });
+
+        if (correctLettersCurrent.length === 5) {
+            setIsModalOpen(true);
+            setGameWon(true);
+            setGameOver(true);
+        }
+    
         return truthValues;
     }
 
     return (
         <Container className="text-center m-auto">
+            <Dialog
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+                >
+                <DialogTitle id="alert-dialog-title">
+                    {gameWon ? "Congratulations!" : "Maybe next time"}
+                </DialogTitle>
+                <DialogContent sx={{minWidth: "350px"}}>
+                    <DialogContentText id="alert-dialog-description">
+                    {gameWon ? "You solved the wordle!" : `The correct word was ${correctWord.toLowerCase()}.`}
+                    
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="outlined" onClick={() => window.location.reload()} color="primary">
+                        Play Again
+                    </Button>
+                </DialogActions>
+            </Dialog>
             {rows}
             <div className="mt-8">{Keyboard()}</div>
         </Container>
