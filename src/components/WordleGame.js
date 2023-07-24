@@ -27,8 +27,8 @@ function WordleGame() {
     const [rowInputs, setRowInputs] = useState(Array.from({ length: attempts }, () => ''));
     const [rowFeedbacks, setRowFeedbacks] = useState(Array.from({ length: attempts }, () => [{}, {}, {}, {}, {}]));
     const [revealAnimation, setRevealAnimation] = useState(false);
-    const [gameOver, setGameOver] = useState(false); // needs to be set throughout the file
-    const [gameWon, setGameWon] = useState(false); // needs to be set throughout the file
+    const [gameOver, setGameOver] = useState(false);
+    const [gameWon, setGameWon] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
 
