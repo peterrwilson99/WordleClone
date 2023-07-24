@@ -1,4 +1,4 @@
-import { Container } from '@mui/material'
+import { Alert, Container, Snackbar } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Tile from './Tile'
@@ -22,6 +22,7 @@ function WordleGame() {
     const [correctLetters, setCorrectLetters] = useState([]);
     const [containedLetters, setContainedLetters] = useState([]);
     const [incorrectLetters, setIncorrectLetters] = useState([]);
+    const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
     const [currentRow, setCurrentRow] = useState(0);
     const [submittedRows, setSubmittedRows] = useState(Array.from({ length: attempts }, () => false));
     const [rowInputs, setRowInputs] = useState(Array.from({ length: attempts }, () => ''));
@@ -31,6 +32,13 @@ function WordleGame() {
     const [gameWon, setGameWon] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+      
+        setIsSnackbarOpen(false);
+    };
 
     const handleKeyPress = (letter) => {
         if (keyboardLetters.includes(letter.toUpperCase())) {
@@ -59,7 +67,7 @@ function WordleGame() {
             // check if word exists in allWords
             const inputString = rowInputs[currentRow].toLowerCase();
             if (!allWords.includes(inputString)) {
-                console.log("Word does not exist in word list");
+                setIsSnackbarOpen(true);
                 return;
             }
             setSubmittedRows((prevSubmittedRows) => {
@@ -209,6 +217,16 @@ function WordleGame() {
             </Dialog>
             {rows}
             <div className="mt-8">{Keyboard()}</div>
+            <Snackbar
+                open={isSnackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: "bottom", horizontal: 'right' }}
+                >
+                <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+                    Word was not found in word list
+                </Alert>
+            </Snackbar>
         </Container>
     )
 }
