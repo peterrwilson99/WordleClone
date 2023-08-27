@@ -160,9 +160,10 @@ function WordleGame() {
         const correctLettersCurrent = [];
         const containedLettersCurrent = [];
         const incorrectLettersCurrent = [];
-        const truthValues = letters.map((letter, index) => {
+        let truthValues = letters.map((letter, index) => {
             const isCorrect = letter === correctWordLetters[index];
-            const isContained = correctWord.includes(letter);
+            correctWordLetters[index] = isCorrect ? undefined : correctWordLetters[index];
+            const isContained = correctWordLetters.includes(letter);
             if (isCorrect) {
                 correctLettersCurrent.push(letter);
             } else if (isContained) {
@@ -170,6 +171,11 @@ function WordleGame() {
             } else {
                 incorrectLettersCurrent.push(letter);
             }
+            return { isCorrect, isContained };
+        });
+        console.log(correctWordLetters);
+        truthValues = truthValues.map(({isCorrect, isContained}, index) => {
+            isContained = correctWordLetters.includes(letters[index]);
             return { isCorrect, isContained };
         });
 
