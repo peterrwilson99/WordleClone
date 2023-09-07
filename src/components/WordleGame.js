@@ -173,7 +173,7 @@ function WordleGame() {
             }
             return { isCorrect, isContained };
         });
-        console.log(correctWordLetters);
+        
         truthValues = truthValues.map(({isCorrect, isContained}, index) => {
             isContained = correctWordLetters.includes(letters[index]);
             return { isCorrect, isContained };
